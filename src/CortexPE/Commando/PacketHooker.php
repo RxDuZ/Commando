@@ -1,7 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
-namespace libs\CortexPE\Commando;
+namespace CortexPE\Commando;
 
 use CortexPE\Commando\exception\HookAlreadyRegistered;
 use CortexPE\Commando\store\SoftEnumStore;
@@ -25,11 +26,13 @@ use function array_product;
 use function count;
 use function spl_object_id;
 
-class PacketHooker implements Listener{
+class PacketHooker implements Listener
+{
     private static bool $isRegistered = false;
     private static bool $isIntercepting = false;
 
-    public static function isRegistered() : bool{
+    public static function isRegistered(): bool
+    {
         return self::$isRegistered;
     }
 
@@ -40,14 +43,15 @@ class PacketHooker implements Listener{
      *
      * @throws HookAlreadyRegistered
      */
-    public static function register(Plugin $registrant) : void{
-        if(self::$isRegistered) {
+    public static function register(Plugin $registrant): void
+    {
+        if (self::$isRegistered) {
             throw new HookAlreadyRegistered("Event listener is already registered by another plugin.");
         }
 
         $interceptor = SimplePacketHandler::createInterceptor($registrant, EventPriority::HIGHEST);
-        $interceptor->interceptOutgoing(function(AvailableCommandsPacket $pk, NetworkSession $target) : bool{
-            if(self::$isIntercepting){
+        $interceptor->interceptOutgoing(function (AvailableCommandsPacket $pk, NetworkSession $target): bool {
+            if (self::$isIntercepting) {
                 return true;
             }
 
@@ -55,13 +59,13 @@ class PacketHooker implements Listener{
             $disassembled = AvailableCommandsPacketDisassembler::disassemble($pk);
             $rebuiltCommandData = [];
 
-            foreach($disassembled->commandData as $cmdData){
+            foreach ($disassembled->commandData as $cmdData) {
                 $name = $cmdData->getName();
                 $cmd = Server::getInstance()->getCommandMap()->getCommand($name);
 
-                if($cmd instanceof BaseCommand){
-                    foreach($cmd->getConstraints() as $constraint){
-                        if(!$constraint->isVisibleTo($player)){
+                if ($cmd instanceof BaseCommand) {
+                    foreach ($cmd->getConstraints() as $constraint) {
+                        if (!$constraint->isVisibleTo($player)) {
                             continue 2;
                         }
                     }
@@ -77,7 +81,7 @@ class PacketHooker implements Listener{
                         overloads: $overloads,
                         chainedSubCommandData: $cmdData->getChainedSubCommandData()
                     );
-                }else{
+                } else {
                     $rebuiltCommandData[] = $cmdData;
                 }
             }
@@ -103,36 +107,37 @@ class PacketHooker implements Listener{
     /**
      * @return CommandOverload[]
      */
-    private static function generateOverloads(CommandSender $cs, BaseCommand $command) : array{
+    private static function generateOverloads(CommandSender $cs, BaseCommand $command): array
+    {
         $overloads = [];
 
-        foreach($command->getSubCommands() as $label => $subCommand){
-            if(!$subCommand->testPermissionSilent($cs) || $subCommand->getName() !== $label){
+        foreach ($command->getSubCommands() as $label => $subCommand) {
+            if (!$subCommand->testPermissionSilent($cs) || $subCommand->getName() !== $label) {
                 continue;
             }
-            foreach($subCommand->getConstraints() as $constraint){
-                if(!$constraint->isVisibleTo($cs)){
+            foreach ($subCommand->getConstraints() as $constraint) {
+                if (!$constraint->isVisibleTo($cs)) {
                     continue 2;
                 }
             }
 
             $scParam = CommandParameter::enum(
                 name: $label,
-                enum: new CommandHardEnum("enum#".spl_object_id($subCommand), [$label]),
+                enum: new CommandHardEnum($subCommand->getName(), [$label]),
                 flags: 0
             );
 
             $child = self::generateOverloads($cs, $subCommand);
-            if(!empty($child)){
-                foreach($child as $ov){
+            if (!empty($child)) {
+                foreach ($child as $ov) {
                     $overloads[] = new CommandOverload(false, [$scParam, ...$ov->getParameters()]);
                 }
-            }else{
+            } else {
                 $overloads[] = new CommandOverload(false, [$scParam]);
             }
         }
 
-        foreach(self::generateOverloadList($command) as $ov){
+        foreach (self::generateOverloadList($command) as $ov) {
             $overloads[] = $ov;
         }
 
@@ -142,9 +147,10 @@ class PacketHooker implements Listener{
     /**
      * @return CommandOverload[]
      */
-    private static function generateOverloadList(IArgumentable $argumentable) : array{
+    private static function generateOverloadList(IArgumentable $argumentable): array
+    {
         $input = $argumentable->getArgumentList();
-        if($input === []){
+        if ($input === []) {
             return [];
         }
 
@@ -152,18 +158,18 @@ class PacketHooker implements Listener{
         $outputLength = array_product(array_map('count', $input));
 
         $indexes = [];
-        foreach($input as $k => $_){
+        foreach ($input as $k => $_) {
             $indexes[$k] = 0;
         }
 
-        do{
+        do {
             $set = [];
-            foreach($indexes as $k => $idx){
+            foreach ($indexes as $k => $idx) {
                 $param = $input[$k][$idx]->getNetworkParameterData();
 
-                if(isset($param->enum) && $param->enum instanceof CommandHardEnum){
+                if (isset($param->enum) && $param->enum instanceof CommandHardEnum) {
                     $param = clone $param;
-                    $param->enum = new CommandHardEnum("enum#".spl_object_id($param), $param->enum->getValues());
+                    $param->enum = new CommandHardEnum($param->enum->getName(), $param->enum->getValues());
                 }
 
                 $set[$k] = $param;
@@ -171,15 +177,15 @@ class PacketHooker implements Listener{
 
             $combinations[] = new CommandOverload(false, $set);
 
-            foreach($indexes as $k => $v){
+            foreach ($indexes as $k => $v) {
                 $indexes[$k]++;
-                if($indexes[$k] >= count($input[$k])){
+                if ($indexes[$k] >= count($input[$k])) {
                     $indexes[$k] = 0;
                     continue;
                 }
                 break;
             }
-        }while(count($combinations) !== $outputLength);
+        } while (count($combinations) !== $outputLength);
 
         return $combinations;
     }
