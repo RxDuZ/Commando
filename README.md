@@ -1,3 +1,6 @@
+**As of 10/25/25 this has been updated by Trix to support the new Pocketmine API Changes**
+**A new packagist has been made**
+
 <h1>Commando<img src="https://raw.githubusercontent.com/CortexPE/Commando/master/commando.png" height="64" width="64" align="left"></h1>
 <br />
 
@@ -17,3 +20,4 @@ We will try to keep this fork up-to-date with the upstream changes.
 
 -----
 **This framework was made with :heart: by CortexPE, modified by Paroxity. Enjoy!~ :3**
+
