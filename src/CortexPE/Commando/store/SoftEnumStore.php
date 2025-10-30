@@ -11,32 +11,27 @@ use pocketmine\network\mcpe\protocol\types\command\CommandHardEnum;
 use pocketmine\network\mcpe\protocol\UpdateSoftEnumPacket;
 use pocketmine\Server;
 
-class SoftEnumStore
-{
+class SoftEnumStore {
 	/** @var CommandHardEnum[] */
 	private static array $enums = [];
 
-	public static function getEnumByName(string $name): ?CommandHardEnum
-	{
+	public static function getEnumByName(string $name): ?CommandHardEnum {
 		return static::$enums[$name] ?? null;
 	}
 
 	/**
 	 * @return CommandHardEnum[]
 	 */
-	public static function getEnums(): array
-	{
+	public static function getEnums(): array {
 		return static::$enums;
 	}
 
-	public static function addEnum(CommandHardEnum $enum): void
-	{
+	public static function addEnum(CommandHardEnum $enum): void {
 		static::$enums[$enum->getName()] = $enum;
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_ADD);
 	}
 
-	public static function updateEnum(string $enumName, array $values): void
-	{
+	public static function updateEnum(string $enumName, array $values): void {
 		if (self::getEnumByName($enumName) === null) {
 			throw new CommandoException("Unknown enum named " . $enumName);
 		}
@@ -44,8 +39,7 @@ class SoftEnumStore
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_SET);
 	}
 
-	public static function removeEnum(string $enumName): void
-	{
+	public static function removeEnum(string $enumName): void {
 		if (($enum = self::getEnumByName($enumName)) === null) {
 			throw new CommandoException("Unknown enum named " . $enumName);
 		}
@@ -53,8 +47,7 @@ class SoftEnumStore
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_REMOVE);
 	}
 
-	public static function broadcastSoftEnum(CommandHardEnum $enum, int $type): void
-	{
+	public static function broadcastSoftEnum(CommandHardEnum $enum, int $type): void {
 		$pk = new UpdateSoftEnumPacket();
 		$pk->enumName = $enum->getName();
 		$pk->values = $enum->getValues();
@@ -62,8 +55,7 @@ class SoftEnumStore
 		self::broadcastPacket($pk);
 	}
 
-	private static function broadcastPacket(ClientboundPacket $pk): void
-	{
+	private static function broadcastPacket(ClientboundPacket $pk): void {
 		$sv = Server::getInstance();
 		NetworkBroadcastUtils::broadcastPackets($sv->getOnlinePlayers(), [$pk]);
 	}

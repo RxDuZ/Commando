@@ -26,13 +26,11 @@ use function array_product;
 use function count;
 use function spl_object_id;
 
-class PacketHooker implements Listener
-{
+class PacketHooker implements Listener {
     private static bool $isRegistered = false;
     private static bool $isIntercepting = false;
 
-    public static function isRegistered(): bool
-    {
+    public static function isRegistered(): bool {
         return self::$isRegistered;
     }
 
@@ -43,8 +41,7 @@ class PacketHooker implements Listener
      *
      * @throws HookAlreadyRegistered
      */
-    public static function register(Plugin $registrant): void
-    {
+    public static function register(Plugin $registrant): void {
         if (self::$isRegistered) {
             throw new HookAlreadyRegistered("Event listener is already registered by another plugin.");
         }
@@ -107,8 +104,7 @@ class PacketHooker implements Listener
     /**
      * @return CommandOverload[]
      */
-    private static function generateOverloads(CommandSender $cs, BaseCommand $command): array
-    {
+    private static function generateOverloads(CommandSender $cs, BaseCommand $command): array {
         $overloads = [];
 
         foreach ($command->getSubCommands() as $label => $subCommand) {
@@ -147,8 +143,7 @@ class PacketHooker implements Listener
     /**
      * @return CommandOverload[]
      */
-    private static function generateOverloadList(IArgumentable $argumentable): array
-    {
+    private static function generateOverloadList(IArgumentable $argumentable): array {
         $input = $argumentable->getArgumentList();
         if ($input === []) {
             return [];
