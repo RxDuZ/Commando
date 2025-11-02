@@ -25,6 +25,7 @@
  * Written by @CortexPE <https://CortexPE.xyz>
  *
  */
+
 declare(strict_types=1);
 
 namespace CortexPE\Commando\args;
@@ -46,11 +47,7 @@ abstract class BaseArgument {
 		$this->name = $name;
 		$this->optional = $optional;
 
-		$this->parameterData = new CommandParameter();
-		$this->parameterData->paramName = $name;
-		$this->parameterData->paramType = AvailableCommandsPacket::ARG_FLAG_VALID;
-		$this->parameterData->paramType |= $this->getNetworkType();
-		$this->parameterData->isOptional = $this->isOptional();
+		$this->parameterData = CommandParameter::standard($name, $this->getNetworkType(), 0, $this->isOptional());
 	}
 
 	abstract public function getNetworkType(): int;
@@ -69,7 +66,7 @@ abstract class BaseArgument {
 	 *
 	 * @return mixed
 	 */
-	abstract public function parse(string $argument, CommandSender $sender) : mixed;
+	abstract public function parse(string $argument, CommandSender $sender): mixed;
 
 	/**
 	 * @return string
@@ -97,7 +94,7 @@ abstract class BaseArgument {
 
 	abstract public function getTypeName(): string;
 
-	public function getNetworkParameterData():CommandParameter {
+	public function getNetworkParameterData(): CommandParameter {
 		return $this->parameterData;
 	}
 }

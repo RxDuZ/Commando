@@ -119,7 +119,7 @@ class PacketHooker implements Listener {
 
             $scParam = CommandParameter::enum(
                 name: $label,
-                enum: new CommandHardEnum($subCommand->getName(), [$label]),
+                enum: new CommandHardEnum($label, [$label]),
                 flags: 0
             );
 
@@ -164,7 +164,7 @@ class PacketHooker implements Listener {
 
                 if (isset($param->enum) && $param->enum instanceof CommandHardEnum) {
                     $param = clone $param;
-                    $param->enum = new CommandHardEnum($param->enum->getName(), $param->enum->getValues());
+                    $param->enum = new CommandHardEnum("enum#" . spl_object_id($param->enum), $param->enum->getValues());
                 }
 
                 $set[$k] = $param;
